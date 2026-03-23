@@ -1,0 +1,40 @@
+{
+  "name": "briefkit",
+  "version": "1.0.0",
+  "description": "Generate production-ready UGC creative briefs and ad scripts from the command line",
+  "type": "module",
+  "bin": {
+    "briefkit": "./bin/briefkit.js"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node bin/briefkit.js",
+    "test": "node test/run.js"
+  },
+  "keywords": [
+    "ugc",
+    "creative-brief",
+    "ad-copy",
+    "copywriting",
+    "marketing",
+    "ai",
+    "cli",
+    "advertising",
+    "content-marketing",
+    "hooks",
+    "scripts",
+    "paid-social"
+  ],
+  "author": "Ad Machine",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/admachineio/briefkit"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
