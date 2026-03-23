@@ -1,4 +1,9 @@
-// Output formatters: markdown, text, json
+/**
+ * format.js — Output formatters: markdown, text, json
+ * Handles new structure: urlContext, icp, viral_multipliers, production_checklist
+ */
+
+import { formatICP } from './icp.js';
 
 export function formatOutput(data, format, mode) {
   if (format === 'json') return JSON.stringify(data, null, 2);
@@ -9,14 +14,42 @@ export function formatOutput(data, format, mode) {
 function formatMarkdown(data, mode) {
   const parts = [];
 
+  // URL context header
+  if (data.urlContext) {
+    parts.push(formatURLContext(data.urlContext));
+    parts.push('---\n');
+  }
+
+  // ICP section (always first)
+  if (data.icp) {
+    parts.push(formatICP(data.icp));
+    parts.push('---\n');
+  }
+
   if (mode === 'both') {
     parts.push(formatMarkdownBrief(data.brief));
     parts.push('\n---\n');
     parts.push(formatMarkdownScript(data.script));
     return parts.join('\n');
   }
-  if (mode === 'script') return formatMarkdownScript(data);
-  return formatMarkdownBrief(data);
+  if (mode === 'script') {
+    parts.push(formatMarkdownScript(data.script || data));
+    return parts.join('\n');
+  }
+
+  parts.push(formatMarkdownBrief(data.brief || data));
+  return parts.join('\n');
+}
+
+function formatURLContext(ctx) {
+  const lines = [];
+  lines.push(`## 🌐 Product Context (from ${ctx.url})\n`);
+  if (ctx.extracted.title) lines.push(`**Title:** ${ctx.extracted.title}`);
+  if (ctx.extracted.description) lines.push(`**Description:** ${ctx.extracted.description}`);
+  if (ctx.extracted.h1 && ctx.extracted.h1 !== ctx.extracted.title) lines.push(`**Headline:** ${ctx.extracted.h1}`);
+  if (ctx.extracted.bodyText) lines.push(`\n**Extracted copy:**\n> ${ctx.extracted.bodyText.slice(0, 300)}...`);
+  lines.push('');
+  return lines.join('\n');
 }
 
 function formatMarkdownBrief(b) {
@@ -83,45 +116,86 @@ function formatMarkdownScript(s) {
   }
   lines.push('');
 
-  // Hooks
-  lines.push(`## Hook Options\n`);
-  s.hook_options.forEach((h, i) => {
-    lines.push(`${i + 1}. **[${h.category}]** ${h.hook} ${h.platform_fit}`);
+  // Hook Analysis
+  lines.push(`## 🎣 Hook Analysis (${s.hook_analysis.count} variants scored)\n`);
+  s.hook_analysis.hooks.forEach((h, i) => {
+    const sc = h.scores;
+    lines.push(`### ${i + 1}. ${h.type.replace(/\b\w/g, c => c.toUpperCase())} Hook`);
+    lines.push(`> ${h.hook}\n`);
+    lines.push(`| Dimension | Score |`);
+    lines.push(`|-----------|-------|`);
+    lines.push(`| Pattern Interrupt | ${'★'.repeat(sc.pattern_interrupt)}${'☆'.repeat(5 - sc.pattern_interrupt)} |`);
+    lines.push(`| Emotional Resonance | ${'★'.repeat(sc.emotional_resonance)}${'☆'.repeat(5 - sc.emotional_resonance)} |`);
+    lines.push(`| Specificity | ${'★'.repeat(sc.specificity)}${'☆'.repeat(5 - sc.specificity)} |`);
+    lines.push(`| Scroll-Stop Power | ${'★'.repeat(sc.scroll_stop_power)}${'☆'.repeat(5 - sc.scroll_stop_power)} |`);
+    lines.push(`| **Total** | **${sc.total}/20** |`);
+    lines.push('');
   });
+
+  lines.push(`### 🏆 Recommended Hook\n`);
+  lines.push(s.hook_analysis.recommended);
   lines.push('');
 
   // Scenes
-  lines.push(`## Scene Breakdown\n`);
+  lines.push('---\n');
+  lines.push(`## 🎬 Scene Breakdown (30-Second Viral Formula)\n`);
   s.scenes.forEach(scene => {
-    lines.push(`### Scene ${scene.scene}: ${scene.label} (${scene.duration})`);
-    lines.push(`**Duration:** ${scene.seconds}s\n`);
-    lines.push(`**Direction:** ${scene.direction}\n`);
-    if (scene.visual) lines.push(`**Visual:** ${scene.visual}\n`);
-    if (scene.audio) lines.push(`**Audio:** ${scene.audio}\n`);
-    if (scene.text_overlay) lines.push(`**Text overlay:** ${scene.text_overlay}\n`);
+    lines.push(`### Scene ${scene.scene} — ${scene.label} \`${scene.timing}\` *(${scene.words})*`);
+    lines.push(`**Purpose:** ${scene.purpose}\n`);
+    lines.push(`📝 **Script:**\n${scene.script}\n`);
+    lines.push(`🎥 **Visual:** ${scene.visual}\n`);
+    lines.push(`📲 **Text Overlay:** \`${scene.text_overlay}\`\n`);
+    lines.push(`🎵 **Audio:** ${scene.audio}\n`);
+    lines.push(`🎬 **Director Note:** ${scene.director_note}\n`);
+    lines.push('---\n');
   });
 
-  // Production notes
-  lines.push(`## Production Notes\n`);
-  s.production_notes.forEach(n => lines.push(`- ${n}`));
+  // Viral Multipliers
+  lines.push(`## ⚡ Viral Multipliers\n`);
+  const vm = s.viral_multipliers;
+  lines.push(`**🔗 Hook-to-Hold Tip:**\n${vm.hook_to_hold_tip}\n`);
+  lines.push(`**💬 Comment Bait:**\n${vm.comment_bait}\n`);
+  lines.push(`**📤 Share Trigger:**\n${vm.share_trigger}\n`);
+  lines.push(`**🔁 Rewatch Hook:**\n${vm.rewatch_hook}\n`);
+  lines.push(`**📱 Platform Tweaks:**`);
+  for (const [platform, tweak] of Object.entries(vm.platform_tweaks)) {
+    lines.push(`- **${platform.charAt(0).toUpperCase() + platform.slice(1)}:** ${tweak}`);
+  }
   lines.push('');
 
-  // B-roll
-  lines.push(`## B-Roll Suggestions\n`);
-  s.b_roll_suggestions.forEach(b => lines.push(`- ${b}`));
+  // Production Checklist
+  lines.push(`## 📋 Production Checklist\n`);
+  const pc = s.production_checklist;
+  lines.push(`**🖼️ First Frame:**\n${pc.first_frame}\n`);
+  lines.push(`**✍️ Caption Openers by Platform:**`);
+  for (const [platform, opener] of Object.entries(pc.caption_openers)) {
+    lines.push(`- **${platform.charAt(0).toUpperCase() + platform.slice(1)}:** "${opener}"`);
+  }
+  lines.push('');
+  lines.push(`**#️⃣ Hashtag Strategy:**`);
+  lines.push(`${pc.hashtag_strategy.hashtags.join(' ')} *(${pc.hashtag_strategy.strategy.slice(0, 80)}...)*\n`);
+  lines.push(`**⏰ Optimal Posting Times:**`);
+  for (const [platform, time] of Object.entries(pc.optimal_posting)) {
+    lines.push(`- **${platform.charAt(0).toUpperCase() + platform.slice(1)}:** ${time}`);
+  }
+  lines.push('');
+  lines.push(`**🎥 Filming Tips:**`);
+  pc.filming_tips.forEach(tip => lines.push(`- ${tip}`));
+  lines.push('');
+  lines.push(`**🔊 Sound Design:** ${pc.sound_design}`);
+  lines.push(`**📝 Caption Note:** ${pc.caption_note}`);
 
   return lines.join('\n');
 }
 
 function formatText(data, mode) {
-  // Strip markdown formatting for plain text
   const md = formatMarkdown(data, mode);
   return md
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/\*\*/g, '')
-    .replace(/\|[^\n]+\|/g, (line) => {
-      return line.replace(/\|/g, '  ').replace(/\-+/g, '').trim();
-    })
+    .replace(/`[^`]+`/g, (s) => s.replace(/`/g, ''))
+    .replace(/\|[^\n]+\|/g, (line) => line.replace(/\|/g, '  ').replace(/-+/g, '').trim())
     .replace(/^>\s+/gm, '  ')
+    .replace(/★|☆/g, '*')
     .replace(/\n{3,}/g, '\n\n');
 }

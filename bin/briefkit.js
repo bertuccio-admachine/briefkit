@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateBrief } from '../src/index.js';
+// generateBrief is now async (supports URL fetching)
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf8'));
@@ -14,6 +15,7 @@ const help = `
 
   Usage:
     briefkit <product-description> [options]
+    briefkit <url> [options]
     briefkit --file product.txt [options]
     echo "my product" | briefkit [options]
 
@@ -23,9 +25,9 @@ const help = `
     --format, -o      Output format: text, json, markdown (default: markdown)
     --platform, -p    Target platform: tiktok, instagram, facebook, youtube, meta, x (default: meta)
     --tone, -t        Tone: casual, professional, urgent, playful, luxury (default: casual)
-    --audience, -a    Target audience description
+    --audience, -a    Target audience (optional — auto-inferred from product if omitted)
     --cta, -c         Call to action
-    --hooks, -h       Number of hook variants to generate (default: 3)
+    --hooks, -h       Number of hook variants to generate (default: 6)
     --brief           Generate full creative brief (default)
     --script          Generate UGC video script instead
     --both            Generate both brief and script
@@ -37,10 +39,16 @@ const help = `
 
   Examples:
     briefkit "Organic protein powder, 30g per serving, vanilla flavor"
+    briefkit https://replit.com --both --hooks 6
     briefkit "SaaS tool for email automation" --framework pas --platform x
     briefkit --file product.txt --both --audience "busy moms aged 25-40"
     briefkit "AI writing tool" --script --tone playful --hooks 5
     cat brief.txt | briefkit --framework aida --json
+
+  New in v2:
+    • Pass a URL → briefkit fetches the page and extracts product context automatically
+    • ICP (Ideal Customer Profile) is auto-generated if --audience is not provided
+    • World-class viral script engine with scored hooks, director notes, and viral multipliers
 
   Frameworks:
     aida              Attention → Interest → Desire → Action
@@ -63,7 +71,7 @@ function parseCliArgs() {
       tone: { type: 'string', short: 't', default: 'casual' },
       audience: { type: 'string', short: 'a' },
       cta: { type: 'string', short: 'c' },
-      hooks: { type: 'string', short: 'h', default: '3' },
+      hooks: { type: 'string', short: 'h', default: '6' },
       brief: { type: 'boolean', default: false },
       script: { type: 'boolean', default: false },
       both: { type: 'boolean', default: false },
@@ -113,7 +121,7 @@ async function main() {
   const format = values.json ? 'json' : values.format;
   const mode = values.both ? 'both' : values.script ? 'script' : 'brief';
 
-  const result = generateBrief({
+  const result = await generateBrief({
     product,
     framework: values.framework,
     format,
