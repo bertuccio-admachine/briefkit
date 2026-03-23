@@ -85,7 +85,7 @@ function buildViralScenes(product, platform, tone, audience, cta, icp, fw) {
       purpose: 'Introduce the product as the hero. Show, don\'t just tell.',
       script: inferRevealScript(product, productName, outcome),
       visual: `SHOW THE PRODUCT. Hold it up, open the app, demonstrate the mechanism. One clear, confident product interaction. No rambling — let the visual do the talking. Clean background or natural lifestyle context.`,
-      text_overlay: `${productName} — ${inferOneLiner(product, outcome)}`,
+      text_overlay: `${productName} — ${inferOneLiner(product, outcome).replace(/\(.*$/, '').trim()}`,
       audio: 'Energy picks back up. Upbeat. Relief enters the voice. The solution has arrived.',
       director_note: `This is the money shot. Whatever ${productName} does best — show it happening RIGHT NOW in this scene. If it's software: screen record the key feature. If it's physical: hands-on demonstration. The viewer should be able to understand the product with the sound off.`,
     },
@@ -311,7 +311,8 @@ function inferProofStat(product, icp) {
 }
 
 function inferProofScript(product, proofStat, icp) {
-  return `"And it's not just me. ${proofStat.stat}. When ${icp ? icp.demographics.split(',')[0].toLowerCase() + 's' : 'people'} who were exactly where you are start seeing results like this — that's when you know it's not luck."`;
+  const group = icp ? pluralizeGroup(icp.demographics.split(',')[0].toLowerCase()) : 'people';
+  return `"And it's not just me. ${proofStat.stat}. When ${group} who were exactly where you are start seeing results like this — that's when you know it's not luck."`;
 }
 
 function inferCTAScript(cta, product, platform, icp) {
@@ -326,7 +327,23 @@ function inferCTAScript(cta, product, platform, icp) {
 }
 
 function inferOneLiner(product, outcome) {
-  return outcome.split('.')[0].slice(0, 60);
+  // Keep it tight — max 8 words for overlay readability
+  const words = outcome.split('.')[0].split(' ');
+  return words.slice(0, 8).join(' ');
+}
+
+function pluralizeGroup(str) {
+  if (!str) return 'people';
+  // Handle common endings cleanly
+  if (str.endsWith('s') || str.endsWith('x') || str.endsWith('z')) return str;
+  if (str.endsWith('er')) return str + 's';
+  if (str.endsWith('or')) return str + 's';
+  if (str.endsWith('ist')) return str + 's';
+  if (str.endsWith('manager') || str.endsWith('founder') || str.endsWith('hacker')) return str + 's';
+  // Fallback: try to append 's' only if it reads naturally, otherwise wrap
+  const lastWord = str.split(' ').pop();
+  if (['developer', 'founder', 'marketer', 'creator', 'builder', 'professional'].includes(lastWord)) return str + 's';
+  return str + ' professionals';
 }
 
 function extractPainPhrase(pain) {

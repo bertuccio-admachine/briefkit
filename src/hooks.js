@@ -23,9 +23,9 @@ const HOOK_TEMPLATES = {
   ],
   bold_claim: [
     "{result} in {timeframe}. I have the receipts.",
-    "This {productType} {bigBenefit}. Full stop.",
+    "This {productType} does what nothing else does. Here's proof.",
     "I haven't {oldWay} in {timeframe}. Here's why.",
-    "{specificStat} — and it took {timeframe}.",
+    "{specificStat}. Here's how.",
   ],
   social_proof: [
     "{bigNumber} {audience} use this daily. Here's why.",
@@ -40,10 +40,10 @@ const HOOK_TEMPLATES = {
     "What {oldTool} did vs. what this does — not even close.",
   ],
   rhetorical_question: [
-    "What if you could {desiredOutcome} without {objection}?",
-    "What would you do with {timeSaved} back in your day?",
+    "What if you could {desiredOutcome} — without {objection}?",
+    "What would you do with {timeSaved} back every week?",
     "Why are you still {painAction} when this exists?",
-    "How much is {problem} actually costing you?",
+    "How much is {painAction} actually costing you per week?",
   ],
 };
 

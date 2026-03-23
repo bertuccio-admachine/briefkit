@@ -43,11 +43,15 @@ function formatMarkdown(data, mode) {
 
 function formatURLContext(ctx) {
   const lines = [];
-  lines.push(`## 🌐 Product Context (from ${ctx.url})\n`);
+  lines.push(`## 🌐 Product Context (fetched from ${ctx.domain})\n`);
   if (ctx.extracted.title) lines.push(`**Title:** ${ctx.extracted.title}`);
   if (ctx.extracted.description) lines.push(`**Description:** ${ctx.extracted.description}`);
-  if (ctx.extracted.h1 && ctx.extracted.h1 !== ctx.extracted.title) lines.push(`**Headline:** ${ctx.extracted.h1}`);
-  if (ctx.extracted.bodyText) lines.push(`\n**Extracted copy:**\n> ${ctx.extracted.bodyText.slice(0, 300)}...`);
+  if (ctx.extracted.h1 && ctx.extracted.h1 !== ctx.extracted.title) lines.push(`**Tagline:** ${ctx.extracted.h1}`);
+  // Only show body text if it looks like real prose (not SPA nav junk)
+  const bodyText = ctx.extracted.bodyText;
+  if (bodyText && bodyText.split(' ').length > 10 && !bodyText.startsWith('Start')) {
+    lines.push(`\n**Page copy:** ${bodyText.slice(0, 250)}`);
+  }
   lines.push('');
   return lines.join('\n');
 }

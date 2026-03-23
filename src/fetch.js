@@ -107,26 +107,43 @@ function extractContext(html, url) {
 }
 
 function extractBodyText(html) {
-  // Remove script, style, nav, header, footer blocks
+  // Strip noise blocks first
   let text = html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<nav[\s\S]*?<\/nav>/gi, '')
     .replace(/<header[\s\S]*?<\/header>/gi, '')
-    .replace(/<footer[\s\S]*?<\/footer>/gi, '');
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+    .replace(/<aside[\s\S]*?<\/aside>/gi, '')
+    .replace(/<!--[\s\S]*?-->/gi, '');
 
-  // Extract <p> content
+  // Extract <p> content — filter out nav/menu junk (short, no spaces, camelCase)
   const paragraphs = [];
   const pMatches = text.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi);
   for (const m of pMatches) {
-    const clean = m[1].replace(/<[^>]+>/g, '').trim();
-    if (clean.length > 40) {
-      paragraphs.push(clean);
-    }
+    const clean = m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const wordCount = clean.split(' ').length;
+    // Skip: too short, looks like nav items, all caps, or encoded junk
+    if (wordCount < 8) continue;
+    if (/^[A-Z\s]+$/.test(clean)) continue;
+    if (clean.includes('&amp;') && wordCount < 15) continue;
+    paragraphs.push(clean);
     if (paragraphs.length >= 3) break;
   }
 
-  return paragraphs.join(' ').slice(0, 400) || null;
+  // Fallback: try <li> items if no <p> found (some SPAs use lists)
+  if (paragraphs.length === 0) {
+    const liMatches = text.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi);
+    for (const m of liMatches) {
+      const clean = m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (clean.split(' ').length >= 5) {
+        paragraphs.push(clean);
+      }
+      if (paragraphs.length >= 4) break;
+    }
+  }
+
+  return paragraphs.length > 0 ? paragraphs.join(' ').slice(0, 400) : null;
 }
 
 function decodeHtmlEntities(str) {
