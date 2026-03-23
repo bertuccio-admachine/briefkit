@@ -211,7 +211,10 @@ function inferHookScript(product, pain, icp) {
   const productName = inferProductName(product);
   const lower = product.toLowerCase();
 
-  if (lower.includes('code') || lower.includes('developer') || lower.includes('replit')) {
+  if (lower.includes('replit')) {
+    return `"I described a SaaS app in 3 sentences. Replit had it live in 4 minutes."`;
+  }
+  if (lower.includes('code') || lower.includes('developer')) {
     return `"I haven't set up a local environment in 6 months. Let me show you why."`;
   }
   if (lower.includes('skin') || lower.includes('serum')) {
@@ -230,7 +233,7 @@ function inferHookScript(product, pain, icp) {
 
 function inferHookOverlay(product, pain) {
   const lower = product.toLowerCase();
-  if (lower.includes('code') || lower.includes('replit')) return 'NO setup. NO install. Just code.';
+  if (lower.includes('replit')) return 'Describe it. Replit builds it. Live in minutes.';
   if (lower.includes('skin')) return 'The skincare thing I wish I knew sooner';
   if (lower.includes('protein')) return 'The supplement that actually worked';
   if (lower.includes('market')) return 'Why my campaigns finally started converting';
@@ -241,7 +244,10 @@ function inferAgitateScript(product, pain, icp) {
   const specificPain = icp?.corePain || pain;
   const lower = product.toLowerCase();
 
-  if (lower.includes('code') || lower.includes('replit') || lower.includes('developer')) {
+  if (lower.includes('replit')) {
+    return `"You have the idea. But then it's: set up the repo, configure the environment, install the dependencies, debug why node_modules is broken again, and by the time you're done — you've lost the momentum. The idea that felt urgent at 10pm is a half-done branch by midnight."`;
+  }
+  if (lower.includes('code') || lower.includes('developer')) {
     return `"You know that feeling when you spend 3 hours on environment setup before writing a single line of code? The Homebrew errors. The conflicting Node versions. The Docker config that worked yesterday and doesn't today. I used to lose entire afternoons to this."`;
   }
   if (lower.includes('skin')) {
@@ -258,8 +264,8 @@ function inferAgitateScript(product, pain, icp) {
 function inferRevealScript(product, productName, outcome) {
   const lower = product.toLowerCase();
 
-  if (lower.includes('replit') || lower.includes('browser') || lower.includes('cloud ide')) {
-    return `"Then I found Replit. Browser tab open. Language selected. Running code in 10 seconds. No Homebrew. No config. Just... a working environment, instantly. I deployed my first project from it an hour later."`;
+  if (lower.includes('replit')) {
+    return `"Replit's AI agent doesn't just autocomplete — it builds. I typed: 'Build me a client portal with login, a dashboard, and Stripe payments.' Three sentences. Replit started writing files, installing packages, wiring up the database. I watched my app get built in real time. Deployed in 4 minutes."`;
   }
   if (lower.includes('skin') || lower.includes('serum')) {
     return `"Then I found ${productName}. I was skeptical — I'd been disappointed before. But 3 weeks in, my skin genuinely looked different. Not 'if you squint' different. Actually different."`;
@@ -274,11 +280,11 @@ function inferRevealScript(product, productName, outcome) {
 function inferProofStat(product, icp) {
   const lower = product.toLowerCase();
 
-  if (lower.includes('replit') || lower.includes('developer')) {
+  if (lower.includes('replit')) {
     return {
-      stat: '30 million developers',
-      visual: 'Screen recording: Replit.com showing community numbers / a project running live in browser',
-      overlay: '30M developers. 50+ languages. 0 setup.',
+      stat: '30 million developers on Replit — including teams at Google, Stripe, and Airbnb',
+      visual: 'Screen recording: show the Replit agent building something live — files appearing, packages installing, app running',
+      overlay: '30M developers. Used by teams at Google, Stripe & Airbnb.',
     };
   }
   if (lower.includes('skin') || lower.includes('serum')) {
@@ -317,10 +323,10 @@ function inferProofScript(product, proofStat, icp) {
 
 function inferCTAScript(cta, product, platform, icp) {
   const lower = product.toLowerCase();
-  const urgencyLine = lower.includes('free') ? 'It\'s free to start.' : lower.includes('trial') ? 'Free trial — no credit card.' : 'Link is right below.';
+  const urgencyLine = lower.includes('free') ? 'Free to start — no card.' : lower.includes('trial') ? 'Free trial — no credit card.' : 'Link is right below.';
 
   if (lower.includes('replit')) {
-    return `"Go to replit.com. Open a tab. Start coding. No download, no setup, no excuse. ${urgencyLine}"`;
+    return `"Go to replit.com. Hit New Repl. Type what you want to build. Watch it happen. Free to start, no setup, no install. The only thing between you and a live app right now is one sentence."`;
   }
 
   return `"${cta}. ${urgencyLine} You've been dealing with ${inferPain(product).split(' ').slice(0, 5).join(' ')} long enough."`;
@@ -353,8 +359,11 @@ function extractPainPhrase(pain) {
 
 function inferHookToHoldTip(product, platform) {
   const lower = product.toLowerCase();
+  if (lower.includes('replit')) {
+    return 'After the hook, CUT IMMEDIATELY to a screen recording of the Replit agent building something — files appearing in real time, packages installing, app preview loading. No voiceover needed for 2 seconds. Developers will freeze. The visual IS the proof. Do not cut away before the app preview loads.';
+  }
   if (lower.includes('code') || lower.includes('developer')) {
-    return 'Cut to a screen recording of Replit working instantly right after the hook. Developers are "show me" people — the fastest way to earn their 3 more seconds is to show the product working before you finish explaining it.';
+    return 'Cut to a screen recording of the product working instantly right after the hook. Developers are "show me" people — the fastest way to earn their 3 more seconds is to show the product working before you finish explaining it.';
   }
   if (lower.includes('skin') || lower.includes('beauty')) {
     return 'Show your actual skin close-up in the hook (no filter, slightly imperfect). Authenticity is the pattern interrupt in a sea of filtered beauty content. Then cut to after — the contrast does the work.';
@@ -364,7 +373,10 @@ function inferHookToHoldTip(product, platform) {
 
 function inferCommentBait(product, pain, icp) {
   const lower = product.toLowerCase();
-  if (lower.includes('code') || lower.includes('replit')) {
+  if (lower.includes('replit')) {
+    return `Two options that both work:\n  1. "AI will replace developers. Replit is just the beginning." — Existential bait. Every dev will weigh in.\n  2. "You don't need to know how to code anymore. Prove me wrong." — Triggers both agreement (non-coders) and debate (engineers). High comment velocity.`;
+  }
+  if (lower.includes('code')) {
     return `"Local dev is dead. Fight me." — This will get developers to defend their setup in the comments. Every comment extends reach.`;
   }
   if (lower.includes('skin') || lower.includes('beauty')) {
